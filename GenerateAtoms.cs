@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,9 +16,9 @@ public class GenerateAtoms : MonoBehaviour
 
     private float XatomsRadius = 0.25f;
     private float BatomsRadius = 0.7f;
-    public Color XatomsColor = Color.red;
-    public Color BatomsColor = Color.blue;
-    public Color AatomsColor = Color.white;
+    private Color XatomsColor = Color.red;
+    private Color BatomsColor = Color.blue;
+    private Color AatomsColor = Color.white;
 
     private Vector3[] XatomCoords = new Vector3[7];
     private Vector3[] AatomCoords = new Vector3[8];
@@ -45,6 +45,8 @@ public class GenerateAtoms : MonoBehaviour
     public float sliderValue;
 
     public bool rotating= true;
+
+    private float sliderLastX = 0f;
     //private GameObject Batom = new GameObject("B");
     void Start()
     {
@@ -57,23 +59,50 @@ public class GenerateAtoms : MonoBehaviour
     {
         sliderValue = slider.value;
         //rotateAround();
+        Vector3 test = new Vector3(1, 0, 0);
 
-        
         //Debug.Log(test.z);
         //Debug.Log(gameObject.transform.FindChild(perovskiteUnitCell[1].name).FindChild(octahedraArray[1].name).FindChild("B").position.z);
-        StartCoroutine(RotateMe(octahedraArray[1], gameObject.transform.FindChild(perovskiteUnitCell[1].name).FindChild(octahedraArray[1].name).FindChild("B").up * -sliderValue));
-        Debug.Log(gameObject.transform.FindChild(perovskiteUnitCell[1].name).FindChild(octahedraArray[1].name).FindChild("B").up.x);
-        StartCoroutine(RotateMe(octahedraArray[0], Vector3.up * sliderValue));
+        //StartCoroutine(RotateMe(octahedraArray[1], gameObject.transform.FindChild(perovskiteUnitCell[1].name).FindChild(octahedraArray[1].name).FindChild("B").up * -sliderValue));
+        //Debug.Log(gameObject.transform.FindChild(perovskiteUnitCell[1].name).FindChild(octahedraArray[1].name).FindChild("B").up.x);
+        //octahedraArray[0].AddComponent<Renderer>();
+        //StartCoroutine(RotateMe(octahedraArray[1], test * sliderValue));
+        //octahedraArray[1].transform.RotateAround(gameObject.transform.FindChild(perovskiteUnitCell[1].name).FindChild(octahedraArray[1].name).FindChild("B").position, Vector3.up, sliderValue*Time.deltaTime);
+
+        /*
+        //ANGLE AXIS TEST
+        float myAngle = slider.value; //angle in degrees
+        Vector3 myAxis = octahedraArray[1].transform.FindChild("B").transform.forward; //whatever axis you want
+        Debug.Log(transform.rotation = Quaternion.Euler(0, 0, 90);.transform.FindChild("B").transform.eulerAngles.y);
+        Quaternion rot = Quaternion.AngleAxis(myAngle, myAxis);
+        octahedraArray[1].transform.rotation = rot;
+        */
+
+        //octahedraArray[1].transform.rotation = Quaternion.Euler(2, slider.value,0 );
+        //Quaternion rotR = Quaternion.AngleAxis(slider.value, octahedraArray[1].transform.up);
+
+        // set rotation to 45 degrees around local right
+        //octahedraArray[1].transform.rotation =  rotR* Quaternion.identity ;
+
 
     }
     //octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild(perovskiteUnitCell[0].name).FindChild(octahedraArray[0].name).FindChild("B").position, Vector3.up, sliderValue);
+
+
+
+
+
+
+
+
     //THIS IS THE COROUTINE FOR ROTATING???!
     IEnumerator RotateMe(GameObject obj, Vector3 byAngles)
     {
         
         var fromAngle = obj.transform.rotation;
         //Debug.Log(fromAngle.z);
-        var toAngle = Quaternion.Euler(transform.eulerAngles + byAngles);
+        
+        var toAngle = Quaternion.Euler(byAngles);
         
             obj.transform.rotation = Quaternion.Lerp(fromAngle, toAngle, 1f);
             yield return null;
@@ -237,7 +266,7 @@ public class GenerateAtoms : MonoBehaviour
                 case 0:
                     ////Debug.Log("WEF WEF EW");
                 //x+=2
-                transformX += 2;
+                transformX = 2;
                     
                 ////generateOctahedra();
                 //resetTransforms();
