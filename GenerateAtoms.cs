@@ -44,11 +44,13 @@ public class GenerateAtoms : MonoBehaviour
     public Slider slider;
     private float sliderValue;
 
+    public Dropdown dropdown;
+    private string dropdownValue;
     //max value is changed in the ChangeValue script
     //public float maxSliderValue = 180;
 
         //glazer variables
-    public string glazerTilt = "a0b0c-";
+    
     private string xPhase = "";
     private string yPhase = "";
     private string zPhase = "";
@@ -60,23 +62,24 @@ public class GenerateAtoms : MonoBehaviour
     Vector3 rotAxisZ = new Vector3();
     Vector3 rotAxisDefault = new Vector3();
     Quaternion rotX;
+    Quaternion rotAntiX;
+    
     Quaternion rotY;
+    Quaternion rotAntiY;
     Quaternion rotZ;
-        //need separate rotations for each layer since the perovskite will be in phase or anti phase
-    Quaternion rotl1;
-    Quaternion rotl2;
+    Quaternion rotAntiZ;
     Quaternion rotDef;
+    Quaternion rotAll;
+    Quaternion rotOpp;
+
     //private GameObject Batom = new GameObject("B");
     void Start()
     {
         octahedraArray = new GameObject[/*dimensions*dimensions*dimensions*/8];
         perovskiteUnitCell = new GameObject[/*dimensions*dimensions*dimensions*/8];
         sliderValue = slider.value;
-
-        //this is the glazer notation stuff delimiting?
-        xPhase = char.ToString(glazerTilt[1]);
-        yPhase = char.ToString(glazerTilt[3]);
-        zPhase = char.ToString(glazerTilt[5]);
+        
+        
 
         //initiating axes of rotation
         rotAxisX = Vector3.right; 
@@ -84,78 +87,184 @@ public class GenerateAtoms : MonoBehaviour
         rotAxisZ = Vector3.up;
         rotAxisDefault = new Vector3(0, 0, 0);
 
-        
-        Debug.Log(glazerTilt);
+        //alright, cool, put this in the update function
+        //Debug.Log(dropdown.captionText.text);
 
         generatePerovskite();
     }
    void Update()
     {
+        simulateTilt();
+
+
+    }
+    public void simulateTilt()
+    {
+        dropdownValue = dropdown.captionText.text;
+        //this is the glazer notation stuff delimiting?
+        xPhase = char.ToString(dropdownValue[1]);
+        yPhase = char.ToString(dropdownValue[3]);
+        zPhase = char.ToString(dropdownValue[5]);
+
+
         rotAngle = slider.value; //degrees of rotation (toggled by slider value)
         rotDef = Quaternion.AngleAxis(rotAngle, rotAxisDefault);
-        //initiating Quaternion rotations (might need to be in Update function because rotations are always changing)
-        rotX = Quaternion.AngleAxis(rotAngle, rotAxisX);
-        rotY = Quaternion.AngleAxis(rotAngle, rotAxisY);
-        rotZ = Quaternion.AngleAxis(rotAngle, rotAxisZ);
-        //if y tilting is possible
+
+        rotX = rotDef;
+        rotY = rotDef;
+        rotZ = rotDef;
+
+        rotAntiX = rotDef;
+        rotAntiY = rotDef;
+        rotAntiZ = rotDef;
+
+   
+        if (!xPhase.Contains("0"))
+        {
+            rotX = Quaternion.AngleAxis(rotAngle, rotAxisX);
+            rotAntiX = Quaternion.AngleAxis(rotAngle, -rotAxisX);
+            //rotAll = rotX;
+            //rotOpp=rotAntiX;
+            if (xPhase.Contains("+"))
+            {
+                rotAll = rotX;
+                rotOpp = rotAntiX;
+            }
+            else if (xPhase.Contains("-"))
+            {
+                rotAll = rotAntiX;
+                rotOpp = rotX;
+            }
+        }
+        else
+        {
+            rotAll = rotX;
+            rotOpp = rotAntiX;
+        }
+        if (!yPhase.Contains("0"))
+        {
+            rotY = Quaternion.AngleAxis(rotAngle, rotAxisY);
+            rotAntiY = Quaternion.AngleAxis(rotAngle, -rotAxisY);
+            if (yPhase.Contains("+"))
+            {
+                rotAll *= rotY;
+                rotOpp *= rotAntiY;
+            }
+            else if (yPhase.Contains("-"))
+            {
+                rotAll *= rotAntiY;
+                rotOpp *= rotY;
+            }
+        }
+        else
+        {
+            rotAll *= rotY;
+            rotOpp *= rotAntiY;
+        }
         if (!zPhase.Contains("0"))
         {
             
-            octahedraArray[0].transform.rotation = rotZ;
-
-            rotZ = Quaternion.AngleAxis(rotAngle, -rotAxisZ);
-            octahedraArray[1].transform.rotation = rotZ;
-
-            rotZ = Quaternion.AngleAxis(rotAngle, -rotAxisZ);
-            octahedraArray[2].transform.rotation = rotZ;
-
             rotZ = Quaternion.AngleAxis(rotAngle, rotAxisZ);
-            octahedraArray[3].transform.rotation = rotZ;
-
+            rotAntiZ = Quaternion.AngleAxis(rotAngle, -rotAxisZ);
             if (zPhase.Contains("+"))
             {
-                octahedraArray[4].transform.rotation = rotZ;
-
-                rotZ = Quaternion.AngleAxis(rotAngle, -rotAxisZ);
-                octahedraArray[5].transform.rotation = rotZ;
-
-                rotZ = Quaternion.AngleAxis(rotAngle, -rotAxisZ);
-                octahedraArray[6].transform.rotation = rotZ;
-
-                rotZ = Quaternion.AngleAxis(rotAngle, rotAxisZ);
-                octahedraArray[7].transform.rotation = rotZ;
+                rotAll *= rotZ;
+                rotOpp *= rotAntiZ;
             }
             else if (zPhase.Contains("-"))
             {
-                rotZ = Quaternion.AngleAxis(rotAngle, -rotAxisZ);
-                octahedraArray[4].transform.rotation = rotZ;
-
-                rotZ = Quaternion.AngleAxis(rotAngle, rotAxisZ);
-                octahedraArray[5].transform.rotation = rotZ;
-
-                rotZ = Quaternion.AngleAxis(rotAngle, rotAxisZ);
-                octahedraArray[6].transform.rotation = rotZ;
-
-                rotZ = Quaternion.AngleAxis(rotAngle, -rotAxisZ);
-                octahedraArray[7].transform.rotation = rotZ;
+                rotAll *= rotAntiZ;
+                rotOpp *= rotZ;
             }
         }
-            
-        
-        
-        
+        else
+        {
+            rotAll *= rotZ;
+            rotOpp *= rotAntiZ;
+        }
         //rotAll = rotX * rotY;
-        ///rotAll *= rotZ;
-        /*
-        //bottom layer (consider using if statement if dimensions get bigger?)
-        octahedraArray[0].transform.rotation = rotl1;
-        octahedraArray[1].transform.rotation = rotl1;
-        octahedraArray[2].transform.rotation = rotl1;
-        octahedraArray[3].transform.rotation = rotl1;
-        */
+        //rotAll *= rotZ;
+        if (xPhase.Contains("+") )
+        {
 
+            octahedraArray[0].transform.rotation = rotAll;
+            octahedraArray[1].transform.rotation = rotAll;
+            octahedraArray[2].transform.rotation = rotOpp;
+            octahedraArray[3].transform.rotation = rotOpp;
+            octahedraArray[4].transform.rotation = rotOpp;
+            octahedraArray[5].transform.rotation = rotOpp;
+            octahedraArray[6].transform.rotation = rotAll;
+            octahedraArray[7].transform.rotation = rotAll;
+        }
+        else if ( xPhase.Contains("-"))
+        {
 
-    }/*
+            octahedraArray[0].transform.rotation = rotAll;
+            octahedraArray[1].transform.rotation = rotOpp;
+            octahedraArray[2].transform.rotation = rotOpp;
+            octahedraArray[3].transform.rotation = rotAll;
+            octahedraArray[4].transform.rotation = rotOpp;
+            octahedraArray[5].transform.rotation = rotAll;
+            octahedraArray[6].transform.rotation = rotAll;
+            octahedraArray[7].transform.rotation = rotOpp;
+        }
+        //a0b+c0 and a0b0c+ need different arrangements! (use if statements?)
+        
+        if (yPhase.Contains("+") )
+        {
+            
+            octahedraArray[0].transform.rotation = rotAll;
+            octahedraArray[1].transform.rotation = rotOpp;
+            octahedraArray[2].transform.rotation = rotAll;
+            octahedraArray[3].transform.rotation = rotOpp;
+            octahedraArray[4].transform.rotation = rotOpp;
+            octahedraArray[5].transform.rotation = rotAll;
+            octahedraArray[6].transform.rotation = rotOpp;
+            octahedraArray[7].transform.rotation = rotAll;
+        }
+        else if ( yPhase.Contains("-"))
+        {
+
+            octahedraArray[0].transform.rotation = rotAll;
+            octahedraArray[1].transform.rotation = rotOpp;
+            octahedraArray[2].transform.rotation = rotOpp;
+            octahedraArray[3].transform.rotation = rotAll;
+            octahedraArray[4].transform.rotation = rotAll;
+            octahedraArray[5].transform.rotation = rotOpp;
+            octahedraArray[6].transform.rotation = rotOpp;
+            octahedraArray[7].transform.rotation = rotAll;
+        }
+        
+        if (zPhase.Contains("+"))
+        {
+
+            octahedraArray[0].transform.rotation = rotAll;
+            octahedraArray[1].transform.rotation = rotOpp;
+            octahedraArray[2].transform.rotation = rotOpp;
+            octahedraArray[3].transform.rotation = rotAll;
+            octahedraArray[4].transform.rotation = rotAll;
+            octahedraArray[5].transform.rotation = rotOpp;
+            octahedraArray[6].transform.rotation = rotOpp;
+            octahedraArray[7].transform.rotation = rotAll;
+        }
+        
+
+        else if (zPhase.Contains("-"))
+        {
+            octahedraArray[0].transform.rotation = rotAll;
+            octahedraArray[1].transform.rotation = rotOpp;
+            octahedraArray[2].transform.rotation = rotOpp;
+            octahedraArray[3].transform.rotation = rotAll;
+            octahedraArray[4].transform.rotation = rotOpp;
+            octahedraArray[5].transform.rotation = rotAll;
+            octahedraArray[6].transform.rotation = rotAll;
+            octahedraArray[7].transform.rotation = rotOpp;
+        }
+
+        
+
+    }
+    /*
    //Coroutine for rotating
     IEnumerator RotateMe(GameObject obj, Vector3 byAngles)
     {
