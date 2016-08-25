@@ -4,8 +4,14 @@ using UnityEngine.UI;
 
 public class GenerateAtoms : MonoBehaviour
 {
+    public Text atomDisplay;
+    public Text keyA;
+    public Text keyB;
+    public Text keyX;
+
+
     [Tooltip("The perovskite structure will be x unit cells by x unit cells")]
-    private int dimensions = 1;
+    public int dimensions = 1;
 
     //change to 1 when making 2by2
     private GameObject[] octahedraArray /*= new GameObject[8]*/;
@@ -14,14 +20,20 @@ public class GenerateAtoms : MonoBehaviour
     private GameObject[] XatomsArray = new GameObject[7];
     private GameObject[] BatomsArray = new GameObject[8];
 
+    private GameObject AatomKey;
+    private GameObject BatomKey ;
+    private GameObject XatomKey ;
+
     private float XatomsRadius = 0.25f;
     private float BatomsRadius = 0.7f;
+    private float AatomsRadius = 0.5f;
     private Color XatomsColor = Color.red;
-    private Color BatomsColor = Color.blue;
-    private Color AatomsColor = Color.white;
+    private Color BatomsColor = new Color(0.24f,1,0);
+    //face vertices (sn)
+    private Color AatomsColor = new Color(0.4f,0.502f,0.502f);
 
-    public Vector3[] XatomCoords = new Vector3[7];
-    public Vector3[] AatomCoords = new Vector3[8];
+    private Vector3[] XatomCoords = new Vector3[7];
+    private Vector3[] AatomCoords = new Vector3[8];
 
     private Vector3[][] meshVerts = new Vector3[8][];
     private Mesh mesh;/* = new Mesh();*/
@@ -34,12 +46,12 @@ public class GenerateAtoms : MonoBehaviour
 
     private GameObject[] planeArray = new GameObject[8];
     private GameObject[] planeArrayCopy = new GameObject[8];
-    public float planeTransparency = 0.3f;
+    private float planeTransparency = 0.3f;
 
     private MeshFilter filter;
     private MeshRenderer renderer2;
 
-    public GameObject SelectedCubeCage;
+    private GameObject SelectedCubeCage;
     //private int octCounter = 1;
     public Slider slider;
     private float sliderValue;
@@ -72,11 +84,14 @@ public class GenerateAtoms : MonoBehaviour
     Quaternion rotAll;
     Quaternion rotOpp;
 
+    private float Xangle;
+    private float Yangle;
+    private float Zangle;
     //private GameObject Batom = new GameObject("B");
     void Start()
     {
-        octahedraArray = new GameObject[/*dimensions*dimensions*dimensions*/8];
-        perovskiteUnitCell = new GameObject[/*dimensions*dimensions*dimensions*/8];
+        octahedraArray = new GameObject[/*dimensions*dimensions*dimensions*/1];
+        perovskiteUnitCell = new GameObject[/*dimensions*dimensions*dimensions*/1];
         sliderValue = slider.value;
         
         
@@ -94,7 +109,7 @@ public class GenerateAtoms : MonoBehaviour
     }
    void Update()
     {
-        simulateTilt();
+       simulateTilt();
 
 
     }
@@ -317,6 +332,26 @@ public class GenerateAtoms : MonoBehaviour
             new Vector3(-unit,-unit,unit),
             new Vector3(-unit,-unit,-unit)
         };
+
+        //generate key for atom display here
+        
+        AatomKey = new GameObject(string.Concat(atomDisplay.text[3], atomDisplay.text[4]));
+        AatomKey=GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        AatomKey.transform.position = keyA.transform.position;
+        AatomKey.transform.localScale = new Vector3(AatomsRadius, AatomsRadius, AatomsRadius);
+        AatomKey.GetComponent<Renderer>().material.color = AatomsColor;
+        
+        BatomKey = new GameObject(string.Concat(atomDisplay.text[1], atomDisplay.text[2]));
+        BatomKey = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        BatomKey.transform.position = keyB.transform.position;
+        BatomKey.transform.localScale = new Vector3(BatomsRadius, BatomsRadius, BatomsRadius);
+        BatomKey.GetComponent<Renderer>().material.color = BatomsColor;
+
+        XatomKey = new GameObject(string.Concat(atomDisplay.text[5]));
+        XatomKey = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        XatomKey.transform.position = keyX.transform.position;
+        XatomKey.transform.localScale = new Vector3(XatomsRadius, XatomsRadius, XatomsRadius);
+        XatomKey.GetComponent<Renderer>().material.color = XatomsColor;
         for (int m = 0; m < octahedraArray.Length; m++)
         {
             
@@ -329,10 +364,7 @@ public class GenerateAtoms : MonoBehaviour
                 //Debug.Log("X: "+transformX);
                 //Debug.Log("Z: " + transformZ);
                 //AatomCoords[i] += new Vector3(transformX, transformY, transformZ);
-                if (m == 2)
-                {
-                    //Debug.Log(AatomCoords[i]);
-                }
+                
                 
                // Debug.Log(AatomCoords[i]);
                 //make the actual sphere
@@ -342,7 +374,7 @@ public class GenerateAtoms : MonoBehaviour
                 AatomsArray[i].transform.position = AatomCoords[i];
                 
                 //radius
-                AatomsArray[i].transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                AatomsArray[i].transform.localScale = new Vector3(AatomsRadius, AatomsRadius, AatomsRadius);
 
                 //make octahedra the parent of the A atoms
                 //AatomsArray[i].transform.parent = octahedraArray[m].transform;
@@ -515,7 +547,7 @@ public class GenerateAtoms : MonoBehaviour
             
 
         }
-        
+
 
         //legit transform here
         //DELTA TIME IS ONLY FOR UPDATE FUNCTION?!?!?!
@@ -523,56 +555,53 @@ public class GenerateAtoms : MonoBehaviour
         //octahedraArray[0].transform.Rotate(Vector3.right, /*Time.deltaTime */ 15, Space.Self);
         //for (int t = 0; t < octahedraArray.Length; t++)
         //{
+
+        /*initiating axes of rotation
+        rotAxisX = Vector3.right;
+        rotAxisY = Vector3.forward;
+        rotAxisZ = Vector3.up;
+        */
+        Xangle = 10f;
+        Yangle = 10;
+        Zangle = 10;
+        /*
+        ///a+a+c+
+         octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 0").FindChild("Octahedra 0").FindChild("B").position, rotAxisX, Xangle);
+          octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 0").FindChild("Octahedra 0").FindChild("B").position, -rotAxisY, Yangle);
+        octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 0").FindChild("Octahedra 0").FindChild("B").position, rotAxisZ, Zangle);
+        //use this as template pl0x
+        //octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild(perovskiteUnitCell[0].name).FindChild(octahedraArray[0].name).FindChild("B").position, Vector3.up, sliderValue);
+
+        octahedraArray[1].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 1").FindChild("Octahedra 1").FindChild("B").position, -rotAxisX, Xangle);
+        octahedraArray[1].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 1").FindChild("Octahedra 1").FindChild("B").position, rotAxisY, Yangle);
+        octahedraArray[1].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 1").FindChild("Octahedra 1").FindChild("B").position, -rotAxisZ, Zangle);
         
-            ///a+a+c+
-         //   octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild("Octahedra 0").FindChild("B").position, Vector3.back, 15);
-        //    octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild("Octahedra 0").FindChild("B").position, Vector3.right, 15);
-         //   octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 0").FindChild("Octahedra 0").FindChild("B").position, Vector3.up, 15);
-         //use this as template pl0x
-        octahedraArray[0].transform.RotateAround(gameObject.transform.FindChild(perovskiteUnitCell[0].name).FindChild(octahedraArray[0].name).FindChild("B").position, Vector3.up, sliderValue);
+        octahedraArray[2].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 2").FindChild("Octahedra 2").FindChild("B").position, -rotAxisX, Xangle);
+        octahedraArray[2].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 2").FindChild("Octahedra 2").FindChild("B").position, rotAxisY, Yangle);
+        octahedraArray[2].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 2").FindChild("Octahedra 2").FindChild("B").position, -rotAxisZ, Zangle);
+
+        octahedraArray[3].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 3").FindChild("Octahedra 3").FindChild("B").position, rotAxisX, Xangle);
+        octahedraArray[3].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 3").FindChild("Octahedra 3").FindChild("B").position, -rotAxisY, Yangle);
+        octahedraArray[3].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 3").FindChild("Octahedra 3").FindChild("B").position, rotAxisZ, Zangle);
         
+        octahedraArray[4].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 4").FindChild("Octahedra 4").FindChild("B").position, -rotAxisX, Xangle);
+        octahedraArray[4].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 4").FindChild("Octahedra 4").FindChild("B").position, rotAxisY, Yangle);
+        octahedraArray[4].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 4").FindChild("Octahedra 4").FindChild("B").position, rotAxisZ, Zangle);
+        
+        octahedraArray[5].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 5").FindChild("Octahedra 5").FindChild("B").position, rotAxisX, Xangle);
+        octahedraArray[5].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 5").FindChild("Octahedra 5").FindChild("B").position, -rotAxisY, Yangle);
+        octahedraArray[5].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 5").FindChild("Octahedra 5").FindChild("B").position, -rotAxisZ, Zangle);
 
+        octahedraArray[6].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 6").FindChild("Octahedra 6").FindChild("B").position, rotAxisX, Xangle);
+        octahedraArray[6].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 6").FindChild("Octahedra 6").FindChild("B").position, -rotAxisY, Yangle);
+        octahedraArray[6].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 6").FindChild("Octahedra 6").FindChild("B").position, -rotAxisZ, Zangle);
 
-        //Debug.Log(gameObject.transform.FindChild("Octahedra 1").FindChild("B").name);
-
-        //THINK ABOUT AUTOMATING (THINK ABOUT GAMEOBJECT FIND CHILD WITH N?!???!
-        // octahedraArray[1].transform.RotateAround(gameObject.transform.FindChild("Octahedra 1").FindChild("B").position, Vector3.forward, 15);
-        //     octahedraArray[1].transform.RotateAround(gameObject.transform.FindChild("Octahedra 1").FindChild("B").position, Vector3.right, 15);
-        //octahedraArray[1].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 1").FindChild("Octahedra 1").FindChild("B").position, -Vector3.up, 15);
-
-        // octahedraArray[2].transform.RotateAround(gameObject.transform.FindChild("Octahedra 2").FindChild("B").position, Vector3.back, 15);
-        //     octahedraArray[2].transform.RotateAround(gameObject.transform.FindChild("Octahedra 2").FindChild("B").position, -Vector3.right, 15);
-        //octahedraArray[2].transform.RotateAround(gameObject.transform.FindChild("Octahedra 2").FindChild("B").position, -Vector3.up, 15);
-
-        //  octahedraArray[3].transform.RotateAround(gameObject.transform.FindChild("Octahedra 3").FindChild("B").position, Vector3.forward, 15);
-        //      octahedraArray[3].transform.RotateAround(gameObject.transform.FindChild("Octahedra 3").FindChild("B").position, -Vector3.right, 15);
-        // octahedraArray[3].transform.RotateAround(gameObject.transform.FindChild("Octahedra 3").FindChild("B").position, Vector3.up, 15);
-
-        //TOP LAYER
-        //  octahedraArray[4].transform.RotateAround(gameObject.transform.FindChild("Octahedra 4").FindChild("B").position, -Vector3.back, 15);
-        //     octahedraArray[4].transform.RotateAround(gameObject.transform.FindChild("Octahedra 4").FindChild("B").position, -Vector3.right, 15);
-        //  octahedraArray[4].transform.RotateAround(gameObject.transform.FindChild("Octahedra 4").FindChild("B").position, -Vector3.up, 15);
-
-        //  octahedraArray[5].transform.RotateAround(gameObject.transform.FindChild("Octahedra 5").FindChild("B").position, -Vector3.forward, 15);
-        //      octahedraArray[5].transform.RotateAround(gameObject.transform.FindChild("Octahedra 5").FindChild("B").position, -Vector3.right, 15);
-        //  octahedraArray[5].transform.RotateAround(gameObject.transform.FindChild("Octahedra 5").FindChild("B").position, Vector3.up, 15);
-
-        // octahedraArray[6].transform.RotateAround(gameObject.transform.FindChild("Octahedra 6").FindChild("B").position, -Vector3.back, 15);
-        //      octahedraArray[6].transform.RotateAround(gameObject.transform.FindChild("Octahedra 6").FindChild("B").position, Vector3.right, 15);
-        //  octahedraArray[6].transform.RotateAround(gameObject.transform.FindChild("Octahedra 6").FindChild("B").position, Vector3.right, 15);
-
-        //  octahedraArray[7].transform.RotateAround(gameObject.transform.FindChild("Octahedra 7").FindChild("B").position, -Vector3.forward, 15);
-        //     octahedraArray[7].transform.RotateAround(gameObject.transform.FindChild("Octahedra 7").FindChild("B").position, Vector3.right, 15);
-        //  octahedraArray[7].transform.RotateAround(gameObject.transform.FindChild("Octahedra 7").FindChild("B").position, -Vector3.right, 15);
-
-
-        //}
+        octahedraArray[7].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 7").FindChild("Octahedra 7").FindChild("B").position, -rotAxisX, Xangle);
+        octahedraArray[7].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 7").FindChild("Octahedra 7").FindChild("B").position, rotAxisY, Yangle);
+        octahedraArray[7].transform.RotateAround(gameObject.transform.FindChild("Perovskite Unit Cell 7").FindChild("Octahedra 7").FindChild("B").position, rotAxisZ, Zangle);
+        */
     }
-    //void Update()
-    //{
-        //octahedraArray[0].transform.Rotate(Vector3.back, Time.deltaTime * 4, Space.Self);
-        //octahedraArray[1].transform.RotateAround(/*.forward*/XatomsArray[4].transform.position, Vector3.forward, Time.deltaTime * 4);
-   // }
+    
     public void rotate(GameObject oct)
     {
         oct.transform.Rotate(Vector3.up * Time.deltaTime * 10, Space.World);
